@@ -53,16 +53,18 @@ class LatestHiccup extends StatelessWidget {
             )
             : TextSpan(
               children: [
+                TextSpan(text: 'The connection was restored at '),
+
                 TextSpan(
-                  text:
-                      'The connection was restored at ${_getFormattedTime(hiccup.endTimestamp!)}\n',
+                  text: '${_getFormattedTime(hiccup.endTimestamp!)}\n',
+                  style: boldStyle,
                 ),
 
                 TextSpan(text: 'A total outage time of '),
 
                 TextSpan(
                   text:
-                      '${_getOutageTime(hiccup.startTimestamp.difference(hiccup.endTimestamp!))}.\n',
+                      '${_getOutageTime(hiccup.endTimestamp!.difference(hiccup.startTimestamp))}.\n',
                   style: boldStyle,
                 ),
 

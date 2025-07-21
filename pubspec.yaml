@@ -32,10 +32,15 @@ dependencies:
   collection: ^1.19.1
   cupertino_icons: ^1.0.8
   dart_ping: ^9.0.1
+  file_selector: ^1.0.3
   flutter:
     sdk: flutter
   intl: ^0.20.2
+  package_info_plus: ^8.3.0
+  path: ^1.9.1
+  url_launcher: ^6.3.2
   uuid: ^4.5.1
+  window_manager: ^0.5.1
 
 dev_dependencies:
   flutter_lints: ^5.0.0
@@ -54,3 +59,23 @@ flutter:
   assets:
     - assets/dinga.png
     - assets/ding.wav
+    - assets/app_logo.png
+
+  fonts:
+    - family: ZenDots
+      fonts:
+        - asset: assets/ZenDots-Regular.ttf
+
+# MSIX Config.
+msix_config:
+  display_name: Pinga Dinga
+  publisher_display_name: Charlie Hall
+  identity_name: com.charliehall.pingadinga
+  msix_version: 1.0.0
+  logo_path: ./windows_resources/msix_logo_512px.png
+  trim_logo: false
+  signtool_options:
+    /sha1 3526b5fc655d9e858cf5c3488a645e60c856fb5b /fd sha256 /tr
+    http://ts.ssl.com /td sha256
+  install_certificate: false
+  publisher: CN=Charlie Hall, O=Charlie Hall, L=Richmond, S=Victoria, C=AU

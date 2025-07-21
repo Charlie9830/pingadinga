@@ -1,12 +1,14 @@
 import 'package:dart_ping/dart_ping.dart';
 import 'package:flutter/material.dart' hide ConnectionState;
 import 'package:pingadinga/editable_text_field.dart';
+import 'package:pingadinga/generic_error_snackbar.dart';
 import 'package:pingadinga/hiccup.dart';
 import 'package:pingadinga/hover_region.dart';
 import 'package:pingadinga/latest_hiccup_timestamp.dart';
 import 'package:pingadinga/models/device_model.dart';
 import 'package:pingadinga/network_state_chip.dart';
 import 'package:pingadinga/response_time.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class NetworkItem extends StatelessWidget {
   final PingData? latestPingData;
@@ -18,6 +20,7 @@ class NetworkItem extends StatelessWidget {
   final void Function() onPauseStream;
   final void Function(String value) onChangeDeviceName;
   final void Function(String value) onChangeIpAddress;
+  final void Function() onResetLiveStatistics;
   final bool isPaused;
   final int index;
 
@@ -34,6 +37,7 @@ class NetworkItem extends StatelessWidget {
     required this.onChangeDeviceName,
     required this.onChangeIpAddress,
     required this.index,
+    required this.onResetLiveStatistics,
   });
 
   @override
@@ -67,7 +71,7 @@ class NetworkItem extends StatelessWidget {
                   ),
                 ),
 
-                VerticalDivider(),
+                const SizedBox(width: 16),
 
                 SizedBox(
                   width: 124,
@@ -83,6 +87,15 @@ class NetworkItem extends StatelessWidget {
                       style: Theme.of(context).textTheme.bodyMedium,
                       onChanged: onChangeIpAddress,
                     ),
+                  ),
+                ),
+
+                const SizedBox(width: 8.0),
+                Tooltip(
+                  message: 'Open IP address in browser',
+                  child: IconButton(
+                    icon: Icon(Icons.open_in_browser),
+                    onPressed: () => _handleOpenInBrowser(context, device),
                   ),
                 ),
 
@@ -108,24 +121,45 @@ class NetworkItem extends StatelessWidget {
                               const SizedBox(width: 24),
                               ReorderableDragStartListener(
                                 index: index,
-                                child: IconButton(
-                                  icon: Icon(Icons.drag_handle),
-                                  padding: EdgeInsets.all(0.0),
-                                  constraints: BoxConstraints(),
-                                  onPressed: () {},
+                                child: Tooltip(
+                                  message: 'Drag to reorder devices',
+                                  child: IconButton(
+                                    icon: Icon(Icons.drag_handle),
+                                    padding: EdgeInsets.all(0.0),
+                                    constraints: BoxConstraints(),
+                                    onPressed: () {},
+                                  ),
                                 ),
                               ),
 
-                              IconButton(
-                                icon:
-                                    isPaused
-                                        ? Icon(Icons.play_circle)
-                                        : Icon(Icons.pause_circle),
-                                padding: EdgeInsets.all(0.0),
-                                constraints: BoxConstraints(),
-                                onPressed:
-                                    isPaused ? onStartStream : onPauseStream,
+                              Tooltip(
+                                message: 'Reset connection statistics',
+                                child: IconButton(
+                                  icon: Icon(Icons.restore),
+                                  padding: EdgeInsets.all(0.0),
+                                  constraints: BoxConstraints(),
+                                  onPressed: onResetLiveStatistics,
+                                ),
                               ),
+
+                              Tooltip(
+                                message:
+                                    isPaused
+                                        ? 'Restart monitoring of this device'
+                                        : 'Pause monitoring of this device',
+                                child: IconButton(
+                                  icon:
+                                      isPaused
+                                          ? Icon(Icons.play_circle)
+                                          : Icon(Icons.pause_circle),
+                                  padding: EdgeInsets.all(0.0),
+                                  constraints: BoxConstraints(),
+                                  onPressed:
+                                      isPaused ? onStartStream : onPauseStream,
+                                ),
+                              ),
+
+                              const SizedBox(width: 8),
 
                               IconButton(
                                 icon: Icon(Icons.clear),
@@ -148,5 +182,30 @@ class NetworkItem extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _handleOpenInBrowser(BuildContext context, DeviceModel device) async {
+    try {
+      final result = await launchUrlString('http://${device.ipAddress}');
+
+      if (result == false && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          genericErrorSnackbar(
+            context: context,
+            message: 'Unable to open device configuration in browser',
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          genericErrorSnackbar(
+            context: context,
+            message:
+                'An error occurred trying to open the device configuration in the browser.',
+          ),
+        );
+      }
+    }
   }
 }
