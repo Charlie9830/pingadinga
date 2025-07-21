@@ -114,6 +114,14 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
           const SizedBox(width: 8),
 
           ElevatedButton.icon(
+            label: Text('Save as'),
+            icon: Icon(Icons.save_as),
+            onPressed: _handleSaveAsButtonPressed,
+          ),
+
+          VerticalDivider(indent: 8, endIndent: 8, width: 24),
+
+          ElevatedButton.icon(
             label: Text('Open'),
             icon: Icon(Icons.file_open),
             onPressed: _handleOpenButtonPressed,
@@ -242,6 +250,10 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
 
   void _handleSaveButtonPressed() {
     _saveFile(saveAs: _filePath.isEmpty);
+  }
+
+  void _handleSaveAsButtonPressed() {
+    _saveFile(saveAs: true);
   }
 
   void _handleOpenButtonPressed() async {
