@@ -1,25 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:pingadinga/hiccup.dart';
+import 'package:pingadinga/network_item.dart';
 
 class LatestHiccup extends StatelessWidget {
   final Hiccup hiccup;
-  const LatestHiccup({super.key, required this.hiccup});
+  final Variance variance;
+  const LatestHiccup({
+    super.key,
+    required this.hiccup,
+    this.variance = Variance.normal,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Tooltip(
       richMessage: _buildTooltipMessage(context, hiccup),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Icon(Icons.access_time, color: Colors.orange),
-          SizedBox(width: 8),
-          Text(
-            _getFormattedTime(hiccup!.startTimestamp),
-            style: Theme.of(
-              context,
-            ).textTheme.labelLarge!.copyWith(color: Colors.orange),
-          ),
+
+          if (variance == Variance.normal) ...[
+            SizedBox(width: 8),
+            Text(
+              _getFormattedTime(hiccup.startTimestamp),
+              style: Theme.of(
+                context,
+              ).textTheme.labelLarge!.copyWith(color: Colors.orange),
+            ),
+          ],
         ],
       ),
     );
@@ -37,7 +47,12 @@ class LatestHiccup extends StatelessWidget {
           children: [
             TextSpan(text: 'A disconnection event was detected '),
             TextSpan(
-              text: '${_getTimeAgo(hiccup.startTimestamp)}.\n',
+              text: _getTimeAgo(hiccup.startTimestamp),
+              style: boldStyle,
+            ),
+            TextSpan(text: ' at '),
+            TextSpan(
+              text: '${_getFormattedTime(hiccup.startTimestamp)} \n',
               style: boldStyle,
             ),
           ],
