@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -9,7 +8,6 @@ import 'package:flutter/material.dart' hide ConnectionState;
 import 'package:pingadinga/about_app_dialog.dart';
 import 'package:pingadinga/add_device_button.dart';
 import 'package:pingadinga/closing_dialog.dart';
-import 'package:pingadinga/create_mock_devices.dart';
 import 'package:pingadinga/device_view_model.dart';
 import 'package:pingadinga/generic_error_snackbar.dart';
 import 'package:pingadinga/generic_info_snackbar.dart';
@@ -202,7 +200,7 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
                 ),
                 buildDefaultDragHandles: false,
                 itemCount: deviceList.length,
-                onReorder: _handleReorder,
+                onReorderItem: _handleReorder,
                 itemBuilder: (context, index) {
                   final device = deviceList[index];
                   final stats = _stats[device.uid];
@@ -413,10 +411,6 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
   }
 
   void _handleReorder(int oldIndex, int newIndex) {
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
-
     final items = _devices.values.toList();
 
     final item = items.removeAt(oldIndex);
@@ -561,21 +555,21 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
 
   LiveDeviceStats _resolveConnectionStats(
     LiveDeviceStats existing,
-    PingData ping,
+    PingEvent ping,
   ) {
     final lastConnectionState = existing.connectionState;
 
-    if (ping.error == null && ping.response != null) {
-      // Good Ping.
-      return switch (lastConnectionState) {
+    return switch (ping) {
+      // Good Response. Compare this ping with the last known connection state.
+      PingResponse() => switch (lastConnectionState) {
         // First time seeing the device. Welcome to the party.
-        ConnectionState.unseen => LiveDeviceStats(
+        ConnectionState.unseen || ConnectionState.unknown => LiveDeviceStats(
           connectionState: ConnectionState.connected,
           lastPing: ping,
           latestHiccup: null,
         ),
 
-        // Device was seen to discconect, but has recconected.
+        // Device was discconected.
         ConnectionState.disconnected => existing.copyWith(
           connectionState: ConnectionState.reconnected,
           lastPing: ping,
@@ -587,12 +581,10 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
         // Device is just doin it's thang.
         ConnectionState.reconnected ||
         ConnectionState.connected => existing.copyWith(lastPing: ping),
-      };
-    } else {
-      // Bad Ping.
-      return switch (lastConnectionState) {
+      },
+      PingError() => switch (lastConnectionState) {
         // Never seen the device before. So don't push any big red buttons yet.
-        ConnectionState.unseen => LiveDeviceStats(
+        ConnectionState.unseen || ConnectionState.unknown => LiveDeviceStats(
           connectionState: ConnectionState.unseen,
           lastPing: ping,
           latestHiccup: null,
@@ -614,8 +606,13 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
           lastPing: ping,
           latestHiccup: existing.latestHiccup?.withMissedPing(),
         ),
-      };
-    }
+      },
+      PingSummary() => LiveDeviceStats(
+        connectionState: ConnectionState.unknown,
+        lastPing: ping,
+        latestHiccup: existing.latestHiccup,
+      ),
+    };
   }
 
   void _initWindowManager() async {

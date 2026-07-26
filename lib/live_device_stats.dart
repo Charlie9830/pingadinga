@@ -7,7 +7,7 @@ import 'package:pingadinga/network_state_chip.dart';
 class LiveDeviceStats {
   ConnectionState connectionState;
   Hiccup? latestHiccup;
-  PingData lastPing;
+  PingEvent lastPing;
 
   LiveDeviceStats({
     required this.connectionState,
@@ -18,7 +18,7 @@ class LiveDeviceStats {
   factory LiveDeviceStats.none() {
     return LiveDeviceStats(
       connectionState: ConnectionState.unseen,
-      lastPing: PingData(),
+      lastPing: PingResponse(),
       latestHiccup: null,
     );
   }
@@ -26,7 +26,7 @@ class LiveDeviceStats {
   LiveDeviceStats copyWith({
     ConnectionState? connectionState,
     Hiccup? latestHiccup,
-    PingData? lastPing,
+    PingEvent? lastPing,
   }) {
     return LiveDeviceStats(
       connectionState: connectionState ?? this.connectionState,

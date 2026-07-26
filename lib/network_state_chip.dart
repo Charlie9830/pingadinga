@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum ConnectionState { unseen, connected, disconnected, reconnected }
+enum ConnectionState { unseen, connected, disconnected, reconnected, unknown }
 
 class ConnectionStateChip extends StatelessWidget {
   final ConnectionState connectionState;
@@ -17,6 +17,7 @@ class ConnectionStateChip extends StatelessWidget {
           ConnectionState.connected => Colors.green,
           ConnectionState.disconnected => Colors.red,
           ConnectionState.reconnected => Colors.orange,
+          ConnectionState.unknown => Colors.blue,
         },
       ),
     );
@@ -33,6 +34,9 @@ class ConnectionStateChip extends StatelessWidget {
 
       ConnectionState.reconnected =>
         'Device was discconected, but has since reconnected',
+
+      ConnectionState.unknown =>
+        'The back end Ping command has concluded, therefore telemetry tracking of this device has stopped.',
     };
   }
 }

@@ -16,7 +16,7 @@ const double _kXSmallBreakpoint = 862;
 enum Variance { normal, small, xSmall }
 
 class NetworkItem extends StatelessWidget {
-  final PingData? latestPingData;
+  final PingEvent? latestPingData;
   final DeviceModel device;
   final ConnectionState connectionState;
   final Hiccup? lastHiccup;
@@ -49,7 +49,6 @@ class NetworkItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        print(constraints.maxWidth);
         return HoverRegionBuilder(
           builder: (context, isHovering) {
             return Card(
@@ -138,11 +137,10 @@ class NetworkItem extends StatelessWidget {
                               onDelete: onDelete,
                             )
                             : ResponseTime(
-                              milliseconds:
-                                  latestPingData
-                                      ?.response
-                                      ?.time
-                                      ?.inMilliseconds,
+                              milliseconds: switch (latestPingData) {
+                                PingResponse p => p.time?.inMilliseconds,
+                                _ => null,
+                              },
                             ),
                       ],
                     ),
