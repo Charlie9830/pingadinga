@@ -6,11 +6,11 @@ class BlurListener extends StatelessWidget {
   final void Function()? onFocus;
 
   const BlurListener({
-    Key? key,
+    super.key,
     required this.child,
     required this.onBlur,
     this.onFocus,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

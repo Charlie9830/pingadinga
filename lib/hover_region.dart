@@ -5,8 +5,7 @@ typedef OnHoverChangedCallback = void Function(bool hovering, bool mouseDown);
 class HoverRegion extends StatelessWidget {
   final Widget? child;
   final OnHoverChangedCallback? onHoverChanged;
-  const HoverRegion({Key? key, this.child, this.onHoverChanged})
-      : super(key: key);
+  const HoverRegion({super.key, this.child, this.onHoverChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -18,16 +17,13 @@ class HoverRegion extends StatelessWidget {
   }
 }
 
-typedef HoverRegionWidgetBuilder = Widget Function(
-    BuildContext context, bool isHovering);
+typedef HoverRegionWidgetBuilder =
+    Widget Function(BuildContext context, bool isHovering);
 
 class HoverRegionBuilder extends StatefulWidget {
   final HoverRegionWidgetBuilder builder;
 
-  const HoverRegionBuilder({
-    super.key,
-    required this.builder,
-  });
+  const HoverRegionBuilder({super.key, required this.builder});
 
   @override
   State<HoverRegionBuilder> createState() => _HoverRegionBuilderState();
@@ -39,8 +35,8 @@ class _HoverRegionBuilderState extends State<HoverRegionBuilder> {
   @override
   Widget build(BuildContext context) {
     return HoverRegion(
-      onHoverChanged: (hovering, mousedown) =>
-          setState(() => _isHovering = hovering),
+      onHoverChanged:
+          (hovering, mousedown) => setState(() => _isHovering = hovering),
       child: widget.builder(context, _isHovering),
     );
   }

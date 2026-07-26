@@ -200,7 +200,6 @@ class _ActionButtons extends StatelessWidget {
   final Variance variance;
 
   const _ActionButtons({
-    super.key,
     required this.index,
     required this.onResetLiveStatistics,
     required this.isPaused,
@@ -240,7 +239,6 @@ class _ConstrainedActionButtons extends StatelessWidget {
   final void Function() onDelete;
 
   const _ConstrainedActionButtons({
-    super.key,
     required this.onResetLiveStatistics,
     required this.isPaused,
     required this.onStartStream,
@@ -292,7 +290,6 @@ class _ConstrainedActionButtons extends StatelessWidget {
 
 class _ExpandedActionButtons extends StatelessWidget {
   const _ExpandedActionButtons({
-    super.key,
     required this.index,
     required this.onResetLiveStatistics,
     required this.isPaused,
