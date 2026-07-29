@@ -302,6 +302,21 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
     try {
       final fileContents = await File(targetFile.path).readAsString();
 
+      final validationResult = ProjectFileModel.validate(fileContents);
+
+      if (validationResult.valid == false) {
+        if (mounted == true) {
+          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(
+            genericErrorSnackbar(
+              context: context,
+              message: validationResult.error,
+            ),
+          );
+        }
+
+        return;
+      }
+
       final projectFileContents = ProjectFileModel.fromJson(fileContents);
 
       // Cancel existing Stream.

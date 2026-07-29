@@ -41,4 +41,34 @@ class ProjectFileModel {
 
   factory ProjectFileModel.fromJson(String source) =>
       ProjectFileModel.fromMap(json.decode(source) as Map<String, dynamic>);
+
+  static ProjectFileValidationResult validate(String source) {
+    try {
+      final map = json.decode(source) as Map<String, dynamic>;
+
+      final fileVersion = map['fileVersion'] ?? 1;
+
+      if (_kFileVersion < fileVersion) {
+        return ProjectFileValidationResult(
+          valid: false,
+          error:
+              'File open aborted. This file was created with a newer version of Pingadinga.',
+        );
+      }
+    } catch (e) {
+      return ProjectFileValidationResult(
+        valid: false,
+        error: 'File failed validation: ${e.toString()}',
+      );
+    }
+
+    return ProjectFileValidationResult(valid: true);
+  }
+}
+
+class ProjectFileValidationResult {
+  final bool valid;
+  final String error;
+
+  ProjectFileValidationResult({required this.valid, this.error = ''});
 }
