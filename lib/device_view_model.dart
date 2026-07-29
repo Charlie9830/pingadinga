@@ -1,5 +1,5 @@
 import 'package:dart_ping/dart_ping.dart';
-import 'package:pingadinga/models/device_model.dart';
+import 'package:pingadinga/models/list_item_model.dart';
 
 class DeviceViewModel {
   final PingEvent ping;

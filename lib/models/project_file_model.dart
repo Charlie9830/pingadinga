@@ -1,24 +1,24 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
-import 'package:pingadinga/models/device_model.dart';
+import 'package:pingadinga/models/list_item_model.dart';
 
-const _kFileVersion = 1;
+const _kFileVersion = 2;
 
 class ProjectFileModel {
   final int fileVersion;
-  final List<DeviceModel> devices;
+  final List<ListItemModel> listItems;
 
-  ProjectFileModel({required this.devices, this.fileVersion = _kFileVersion});
+  ProjectFileModel({required this.listItems, this.fileVersion = _kFileVersion});
 
-  ProjectFileModel copyWith({List<DeviceModel>? devices}) {
-    return ProjectFileModel(devices: devices ?? this.devices);
+  ProjectFileModel copyWith({List<ListItemModel>? listItems}) {
+    return ProjectFileModel(listItems: listItems ?? this.listItems);
   }
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'fileVersion': fileVersion,
-      'devices': devices.map((x) => x.toMap()).toList(),
+      'items': listItems.map((x) => x.toMap()).toList(),
     };
   }
 
@@ -29,9 +29,9 @@ class ProjectFileModel {
 
     return ProjectFileModel(
       fileVersion: assertedFileVersion,
-      devices: List<DeviceModel>.from(
-        (map['devices']).map<DeviceModel>(
-          (x) => DeviceModel.fromMap(x as Map<String, dynamic>),
+      listItems: List<ListItemModel>.from(
+        (map['items'] ?? map['devices']).map<ListItemModel>(
+          (x) => ListItemModel.fromMap(x as Map<String, dynamic>),
         ),
       ),
     );

@@ -1,4 +1,4 @@
-import 'package:pingadinga/models/device_model.dart';
+import 'package:pingadinga/models/list_item_model.dart';
 
 Map<String, DeviceModel> createMockDevices() {
   return {

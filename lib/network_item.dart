@@ -5,7 +5,7 @@ import 'package:pingadinga/generic_error_snackbar.dart';
 import 'package:pingadinga/hiccup.dart';
 import 'package:pingadinga/hover_region.dart';
 import 'package:pingadinga/latest_hiccup_timestamp.dart';
-import 'package:pingadinga/models/device_model.dart';
+import 'package:pingadinga/models/list_item_model.dart';
 import 'package:pingadinga/network_state_chip.dart';
 import 'package:pingadinga/response_time.dart';
 import 'package:url_launcher/url_launcher_string.dart';

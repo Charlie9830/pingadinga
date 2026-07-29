@@ -7,14 +7,16 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart' hide ConnectionState;
 import 'package:pingadinga/about_app_dialog.dart';
 import 'package:pingadinga/add_device_button.dart';
+import 'package:pingadinga/add_divider_button.dart';
 import 'package:pingadinga/closing_dialog.dart';
 import 'package:pingadinga/device_view_model.dart';
+import 'package:pingadinga/divider.dart';
 import 'package:pingadinga/generic_error_snackbar.dart';
 import 'package:pingadinga/generic_info_snackbar.dart';
 import 'package:pingadinga/get_uid.dart';
 import 'package:pingadinga/hiccup.dart';
 import 'package:pingadinga/live_device_stats.dart';
-import 'package:pingadinga/models/device_model.dart';
+import 'package:pingadinga/models/list_item_model.dart';
 import 'package:pingadinga/models/project_file_model.dart';
 import 'package:pingadinga/network_item.dart';
 import 'package:pingadinga/network_state_chip.dart';
@@ -69,7 +71,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> with WindowListener {
-  Map<String, DeviceModel> _devices = {};
+  Map<String, ListItemModel> _items = {};
   Map<String, StreamSubscription<DeviceViewModel>> _streamSubcriptions = {};
   Map<String, LiveDeviceStats> _stats = {};
   final AudioPlayer _dinger = AudioPlayer();
@@ -90,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
 
   @override
   Widget build(BuildContext context) {
-    final deviceList = _devices.values.toList();
+    final itemList = _items.values.toList();
 
     return Scaffold(
       key: _scaffoldKey,
@@ -186,7 +188,7 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
         ),
       ),
       body:
-          deviceList.isEmpty
+          itemList.isEmpty
               ? NoDevicesFallback(
                 onAddDevicesButtonPressed: _handleAddDeviceButtonPressed,
                 onOpenFileButtonPressed: _handleOpenButtonPressed,
@@ -196,34 +198,47 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     AddDeviceButton(onPressed: _handleAddDeviceButtonPressed),
+                    AddDividerButton(onPressed: _handleAddDividerButtonPressed),
                   ],
                 ),
                 buildDefaultDragHandles: false,
-                itemCount: deviceList.length,
+                itemCount: itemList.length,
                 onReorderItem: _handleReorder,
                 itemBuilder: (context, index) {
-                  final device = deviceList[index];
-                  final stats = _stats[device.uid];
+                  final item = itemList[index];
+                  final stats = _stats[item.uid];
 
-                  return NetworkItem(
-                    key: Key(device.uid),
-                    index: index,
-                    device: device,
-                    latestPingData: stats?.lastPing,
-                    connectionState:
-                        stats?.connectionState ?? ConnectionState.unseen,
-                    lastHiccup: stats?.latestHiccup,
-                    onDelete: () => _handleRemoveDevice(device),
-                    isPaused:
-                        _streamSubcriptions.keys.contains(device.uid) == false,
-                    onPauseStream: () => _handleDeviceStreamPause(device),
-                    onStartStream: () => _handleDeviceStreamStart(device),
-                    onChangeDeviceName:
-                        (value) => _handleChangeDeviceName(device, value),
-                    onChangeIpAddress:
-                        (value) => _handleChangeIpAddress(device, value),
-                    onResetLiveStatistics: () => _handleResetStats(device),
-                  );
+                  return switch (item) {
+                    DeviceModel() => NetworkItem(
+                      key: Key(item.uid),
+                      index: index,
+                      device: item,
+                      latestPingData: stats?.lastPing,
+                      connectionState:
+                          stats?.connectionState ?? ConnectionState.unseen,
+                      lastHiccup: stats?.latestHiccup,
+                      onDelete: () => _handleRemoveDevice(item),
+                      isPaused:
+                          _streamSubcriptions.keys.contains(item.uid) == false,
+                      onPauseStream: () => _handleDeviceStreamPause(item),
+                      onStartStream: () => _handleDeviceStreamStart(item),
+                      onChangeDeviceName:
+                          (value) => _handleChangeDeviceName(item, value),
+                      onChangeIpAddress:
+                          (value) => _handleChangeIpAddress(item, value),
+                      onResetLiveStatistics: () => _handleResetStats(item),
+                    ),
+                    DividerModel() => PingaDivider(
+                      key: Key(item.uid),
+                      index: index,
+                      name: item.name,
+                      description: item.description,
+                      onNameChanged:
+                          (newValue) =>
+                              _handleDividerNameChanged(item.uid, newValue),
+                      onDelete: () => _handleDividerDeleted(item.uid),
+                    ),
+                  };
                 },
               ),
     );
@@ -259,7 +274,7 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
   }
 
   void _openFile() async {
-    if (_devices.isNotEmpty) {
+    if (_items.isNotEmpty) {
       // We have unsaved changes. Ask the user what they want to do.
       final dialogResult = await showAlertDialog(
         context: context,
@@ -294,8 +309,8 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
 
       setState(() {
         _stats = {};
-        _devices = Map<String, DeviceModel>.fromEntries(
-          projectFileContents.devices.map(
+        _items = Map<String, ListItemModel>.fromEntries(
+          projectFileContents.listItems.map(
             (device) => MapEntry(device.uid, device),
           ),
         );
@@ -360,7 +375,7 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
     try {
       // Write the project contents to File.
       final writeResult = await File(targetPath).writeAsString(
-        ProjectFileModel(devices: _devices.values.toList()).toJson(),
+        ProjectFileModel(listItems: _items.values.toList()).toJson(),
       );
 
       // Success, inform the user.
@@ -411,13 +426,13 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
   }
 
   void _handleReorder(int oldIndex, int newIndex) {
-    final items = _devices.values.toList();
+    final items = _items.values.toList();
 
     final item = items.removeAt(oldIndex);
     items.insert(newIndex, item);
 
     setState(() {
-      _devices = Map<String, DeviceModel>.fromEntries(
+      _items = Map<String, ListItemModel>.fromEntries(
         items.map((item) => MapEntry(item.uid, item)),
       );
     });
@@ -425,9 +440,12 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
 
   void _handleChangeDeviceName(DeviceModel device, String newValue) {
     setState(() {
-      _devices = Map<String, DeviceModel>.from(_devices)..update(
+      _items = Map<String, ListItemModel>.from(_items)..update(
         device.uid,
-        (existing) => existing.copyWith(name: newValue.trim()),
+        (existing) =>
+            existing is DeviceModel
+                ? existing.copyWith(name: newValue.trim())
+                : existing,
       );
     });
   }
@@ -453,7 +471,7 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
     // If we have reached here then the address is valid.
     final updatedDevice = device.copyWith(ipAddress: trimedAddress);
     setState(() {
-      _devices = Map<String, DeviceModel>.from(_devices)
+      _items = Map<String, ListItemModel>.from(_items)
         ..update(device.uid, (_) => updatedDevice);
     });
 
@@ -461,7 +479,7 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
   }
 
   void _handlePlayAllStreams() async {
-    for (final device in _devices.values) {
+    for (final device in _items.values.whereType<DeviceModel>()) {
       if (_streamSubcriptions.containsKey(device.uid) == false) {
         _streamSubcriptions[device.uid] = _startAndSubscribeToPing(device);
       }
@@ -510,7 +528,7 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
 
       setState(() {
         _stats = Map<String, LiveDeviceStats>.from(_stats)..remove(device.uid);
-        _devices = Map<String, DeviceModel>.from(_devices)..remove(device.uid);
+        _items = Map<String, DeviceModel>.from(_items)..remove(device.uid);
       });
     }
   }
@@ -519,15 +537,28 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
     final newDevice = DeviceModel(uid: getUid(), ipAddress: '', name: '');
 
     setState(() {
-      _devices = Map<String, DeviceModel>.from(_devices)
+      _items = Map<String, ListItemModel>.from(_items)
         ..addAll({newDevice.uid: newDevice});
+    });
+  }
+
+  void _handleAddDividerButtonPressed() {
+    final newDivider = DividerModel(
+      uid: getUid(),
+      name: 'Divider',
+      description: '',
+    );
+
+    setState(() {
+      _items = Map<String, ListItemModel>.from(_items)
+        ..addAll({newDivider.uid: newDivider});
     });
   }
 
   void _setupStreams() {
     _streamSubcriptions =
         Map<String, StreamSubscription<DeviceViewModel>>.fromEntries(
-          _devices.values.map((device) {
+          _items.values.whereType<DeviceModel>().map((device) {
             final deviceId = device.uid;
             return MapEntry(deviceId, _startAndSubscribeToPing(device));
           }),
@@ -651,6 +682,29 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
     await Future.wait(cancels);
 
     _streamSubcriptions = {};
+  }
+
+  void _handleDividerNameChanged(String uid, String newValue) {
+    final divider = _items[uid];
+
+    if (divider == null) {
+      return;
+    }
+
+    if (divider is! DividerModel) {
+      return;
+    }
+
+    setState(() {
+      _items = Map<String, ListItemModel>.from(_items)
+        ..update(uid, (_) => divider.copyWith(name: newValue.trim()));
+    });
+  }
+
+  void _handleDividerDeleted(String uid) {
+    setState(() {
+      _items = Map<String, ListItemModel>.from(_items)..remove(uid);
+    });
   }
 
   @override

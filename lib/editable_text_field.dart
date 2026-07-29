@@ -14,6 +14,7 @@ class EditableTextField extends StatefulWidget {
   final void Function(String newValue)? onChanged;
   final List<TextInputFormatter> inputFormatters;
   final bool enabled;
+  final InputDecoration? decoration;
 
   const EditableTextField({
     super.key,
@@ -28,6 +29,7 @@ class EditableTextField extends StatefulWidget {
     this.selectAllOnFocus = false,
     this.inputFormatters = const [],
     this.enabled = true,
+    this.decoration,
   });
 
   @override
@@ -70,15 +72,18 @@ class _EditableTextFieldState extends State<EditableTextField> {
         style: widget.style,
         inputFormatters: widget.inputFormatters,
         cursorHeight: widget.cursorHeight,
-        decoration: InputDecoration(
-          isDense: true,
-          hintText: widget.hintText,
-          hintStyle: Theme.of(
-            context,
-          ).textTheme.bodyLarge!.copyWith(color: Colors.grey),
-          prefixText: widget.prefix,
-          suffixText: widget.suffix,
-        ),
+        decoration:
+            widget.decoration ??
+            InputDecoration(
+              isDense: true,
+              hintText: widget.hintText,
+              border: null,
+              hintStyle: Theme.of(
+                context,
+              ).textTheme.bodyLarge!.copyWith(color: Colors.grey),
+              prefixText: widget.prefix,
+              suffixText: widget.suffix,
+            ),
       ),
     );
   }
