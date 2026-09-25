@@ -543,7 +543,7 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
 
       setState(() {
         _stats = Map<String, LiveDeviceStats>.from(_stats)..remove(device.uid);
-        _items = Map<String, DeviceModel>.from(_items)..remove(device.uid);
+        _items = Map<String, ListItemModel>.from(_items)..remove(device.uid);
       });
     }
   }
