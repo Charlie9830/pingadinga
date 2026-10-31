@@ -6,7 +6,7 @@
 No frills ICMP Ping based network monitoring.
 
 ## Download ##
-[macOS](https://github.com/Charlie9830/pingadinga/releases/latest/download/pingadinga-universal.pkg)
+[macOS](https://github.com/Charlie9830/pingadinga/releases/latest/download/pingadinga-macos-universal.pkg)
 
 [Windows](https://github.com/Charlie9830/pingadinga/releases/latest/download/pingadinga-x64.msix)
 
