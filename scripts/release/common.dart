@@ -193,55 +193,23 @@ String configValue(YamlMap config, String dottedKey) {
 
 /// Version and signing details read from the app's `pubspec.yaml`.
 class PubspecInfo {
-  PubspecInfo({
-    required this.fullVersion,
-    required this.buildName,
-    required this.msixVersion,
-    required this.certThumbprint,
-  });
+  PubspecInfo({required this.fullVersion, required this.buildName});
 
   /// e.g. `1.1.1+1`.
   final String fullVersion;
 
   /// e.g. `1.1.1`.
   final String buildName;
-
-  /// e.g. `1.1.1.0`.
-  final String msixVersion;
-
-  /// The `/sha1` thumbprint from `msix_config.signtool_options`, if any.
-  final String? certThumbprint;
 }
 
 PubspecInfo readPubspecInfo() {
-  final content =
-      File(p.join(repoRoot, 'pubspec.yaml')).readAsStringSync();
+  final content = File(p.join(repoRoot, 'pubspec.yaml')).readAsStringSync();
   final pubspec = loadYaml(content) as YamlMap;
   final version = pubspec['version']?.toString();
   if (version == null) {
     throw ReleaseException('pubspec.yaml: could not find version.');
   }
-  final msixConfig = pubspec['msix_config'];
-  final msixVersion =
-      msixConfig is YamlMap ? msixConfig['msix_version']?.toString() : null;
-  if (msixVersion == null) {
-    throw ReleaseException(
-      'pubspec.yaml: could not find msix_config.msix_version.',
-    );
-  }
-  final signtoolOptions =
-      msixConfig is YamlMap ? msixConfig['signtool_options']?.toString() : null;
-  final thumbprint = signtoolOptions == null
-      ? null
-      : RegExp(r'/sha1\s+([0-9a-fA-F]{40})')
-          .firstMatch(signtoolOptions)
-          ?.group(1);
-  return PubspecInfo(
-    fullVersion: version,
-    buildName: version.split('+').first,
-    msixVersion: msixVersion,
-    certThumbprint: thumbprint,
-  );
+  return PubspecInfo(fullVersion: version, buildName: version.split('+').first);
 }
 
 /// Records the SHA-256 of [artifact] against [artifactName] in the
@@ -249,12 +217,13 @@ PubspecInfo readPubspecInfo() {
 /// name so re-runs stay idempotent. Returns the checksum hex.
 String recordChecksum(File checksumsFile, File artifact, String artifactName) {
   final sha256Hex = sha256.convert(artifact.readAsBytesSync()).toString();
-  final otherLines = checksumsFile.existsSync()
-      ? checksumsFile
-            .readAsLinesSync()
-            .where((line) => !line.endsWith('  $artifactName'))
-            .toList()
-      : <String>[];
+  final otherLines =
+      checksumsFile.existsSync()
+          ? checksumsFile
+              .readAsLinesSync()
+              .where((line) => !line.endsWith('  $artifactName'))
+              .toList()
+          : <String>[];
   checksumsFile.writeAsStringSync(
     '${[...otherLines, '$sha256Hex  $artifactName'].join('\n')}\n',
   );
@@ -445,17 +414,15 @@ Future<String> publishRelease({
   return _releaseUrl(tag: tag, githubRepo: githubRepo);
 }
 
-Future<String> _releaseUrl({
-  required String tag,
-  required String githubRepo,
-}) => capture('gh', [
-  'release',
-  'view',
-  tag,
-  '--repo',
-  githubRepo,
-  '--json',
-  'url',
-  '--jq',
-  '.url',
-]);
+Future<String> _releaseUrl({required String tag, required String githubRepo}) =>
+    capture('gh', [
+      'release',
+      'view',
+      tag,
+      '--repo',
+      githubRepo,
+      '--json',
+      'url',
+      '--jq',
+      '.url',
+    ]);

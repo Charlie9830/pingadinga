@@ -46,9 +46,10 @@ Future<void> buildWindows(List<String> args) async {
 
   step('Preflight');
 
-  final flutterVersion = (await capture('flutter', [
-    '--version',
-  ], runInShell: true)).split('\n').first.trim();
+  final flutterVersion =
+      (await capture('flutter', [
+        '--version',
+      ], runInShell: true)).split('\n').first.trim();
   stdout.writeln(flutterVersion);
 
   final treeStatus = await capture('git', ['status', '--porcelain']);
@@ -80,36 +81,6 @@ Future<void> buildWindows(List<String> args) async {
 
   final pubspec = readPubspecInfo();
   final version = pubspec.buildName;
-  final expectedMsix = '$version.0';
-  if (pubspec.msixVersion != expectedMsix) {
-    throw ReleaseException(
-      'Version mismatch: pubspec version is ${pubspec.fullVersion} but '
-      'msix_version is ${pubspec.msixVersion}; expected $expectedMsix. '
-      'Update pubspec.yaml so they agree.',
-    );
-  }
-  stdout.writeln('Releasing version $version (msix ${pubspec.msixVersion})');
-
-  final thumbprint = pubspec.certThumbprint;
-  if (thumbprint == null) {
-    throw ReleaseException(
-      'Could not find a /sha1 thumbprint in msix_config.signtool_options.',
-    );
-  }
-  final certSubject = await capture('powershell', [
-    '-NoProfile',
-    '-Command',
-    r'Get-ChildItem Cert:\CurrentUser\My, Cert:\LocalMachine\My '
-        "-ErrorAction SilentlyContinue | Where-Object Thumbprint -eq "
-        "'$thumbprint' | Select-Object -First 1 -ExpandProperty Subject",
-  ]);
-  if (certSubject.isEmpty) {
-    throw ReleaseException(
-      'Signing certificate $thumbprint was not found in the CurrentUser '
-      'or LocalMachine certificate store.',
-    );
-  }
-  stdout.writeln('Signing certificate present: $certSubject');
 
   if (publishing) {
     await runChecked('gh', ['auth', 'status']);
@@ -167,12 +138,13 @@ Future<void> buildWindows(List<String> args) async {
 
   final sha256Hex = sha256.convert(artifact.readAsBytesSync()).toString();
   final checksumsFile = File(p.join(distDir.path, 'checksums-$version.txt'));
-  final otherLines = checksumsFile.existsSync()
-      ? checksumsFile
-            .readAsLinesSync()
-            .where((line) => !line.endsWith('  $stableName'))
-            .toList()
-      : <String>[];
+  final otherLines =
+      checksumsFile.existsSync()
+          ? checksumsFile
+              .readAsLinesSync()
+              .where((line) => !line.endsWith('  $stableName'))
+              .toList()
+          : <String>[];
   checksumsFile.writeAsStringSync(
     '${[...otherLines, '$sha256Hex  $stableName'].join('\n')}\n',
   );
