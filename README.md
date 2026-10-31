@@ -1,4 +1,4 @@
-<img width="512" height="512" alt="pingadinga_logo_512px" src="https://github.com/user-attachments/assets/559ccd21-d022-4e02-94a7-e20c9ddc14d5" />
+<img width="256" height="256" alt="pingadinga_logo_512px" src="https://github.com/user-attachments/assets/559ccd21-d022-4e02-94a7-e20c9ddc14d5" />
 
 
 # Pinga Dinga #
