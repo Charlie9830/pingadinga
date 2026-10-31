@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:dart_ping/dart_ping.dart';
 import 'package:file_selector/file_selector.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide ConnectionState;
 import 'package:pingadinga/about_app_dialog.dart';
 import 'package:pingadinga/add_device_button.dart';
@@ -662,6 +663,9 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
   }
 
   void _initWindowManager() async {
+    if (kDebugMode == false) {
+      await windowManager.maximize();
+    }
     await windowManager.setPreventClose(true);
   }
 
