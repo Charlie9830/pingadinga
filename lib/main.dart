@@ -676,7 +676,7 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
       negativeActionLabel: 'Go back',
     );
 
-    if (dialogResult == false) {
+    if (dialogResult == null || dialogResult == false) {
       return;
     }
 
@@ -688,14 +688,20 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
 
     await Future.wait(shutdownProccesses);
 
+    await windowManager.setPreventClose(false);
+    windowManager.close();
     windowManager.destroy();
+
+    if (Platform.isMacOS) {
+      // Ensure the process is completly down.
+      exit(0);
+    }
   }
 
   Future<void> _cancelAllSubscriptions() async {
     final cancels =
         _streamSubcriptions.values.map((sub) => sub.cancel()).toList();
     await Future.wait(cancels);
-
     _streamSubcriptions = {};
   }
 

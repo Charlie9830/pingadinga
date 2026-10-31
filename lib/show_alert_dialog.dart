@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-Future<bool> showAlertDialog({
+Future<bool?> showAlertDialog({
   required BuildContext context,
   required String title,
   required String message,
