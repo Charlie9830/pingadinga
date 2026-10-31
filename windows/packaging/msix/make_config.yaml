@@ -1,12 +1,12 @@
 display_name: Pinga Dinga
-  publisher_display_name: Charlie Hall
-  identity_name: com.charliehall.pingadinga
-  msix_version: 1.1.1.0
-  logo_path: ./windows_resources/msix_logo_512px.png
-  trim_logo: false
-  capabilities: internetClientServer, privateNetworkClientServer
-  signtool_options:
-    /sha1 f82c0155a1c0a39ff00a12de4b3675c698d76dc5 /fd sha256 /tr
-    http://ts.ssl.com /td sha256
-  install_certificate: false
-  publisher: CN=Charlie Hall, O=Charlie Hall, L=Richmond, S=Victoria, C=AU
+publisher_display_name: Charlie Hall
+identity_name: com.charliehall.pingadinga
+msix_version: 1.1.1.0
+logo_path: ./windows_resources/msix_logo_512px.png
+trim_logo: false
+capabilities: internetClientServer, privateNetworkClientServer
+signtool_options:
+  /sha1 f82c0155a1c0a39ff00a12de4b3675c698d76dc5 /fd sha256 /tr
+  http://ts.ssl.com /td sha256
+install_certificate: false
+publisher: CN=Charlie Hall, O=Charlie Hall, L=Richmond, S=Victoria, C=AU
