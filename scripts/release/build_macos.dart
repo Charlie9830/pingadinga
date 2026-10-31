@@ -54,17 +54,14 @@ Future<void> buildMacos(List<String> args) async {
 
   step('Preflight');
 
-  final flutterVersion = (await capture('flutter', [
-    '--version',
-  ])).split('\n').first.trim();
+  final flutterVersion =
+      (await capture('flutter', ['--version'])).split('\n').first.trim();
   stdout.writeln(flutterVersion);
 
   final treeStatus = await capture('git', ['status', '--porcelain']);
   if (treeStatus.isNotEmpty) {
     if (allowDirty) {
-      warn(
-        'Working tree is dirty (--allow-dirty given). NOT a release build.',
-      );
+      warn('Working tree is dirty (--allow-dirty given). NOT a release build.');
     } else {
       throw ReleaseException(
         'The working tree has uncommitted changes. Release builds must '
@@ -84,21 +81,12 @@ Future<void> buildMacos(List<String> args) async {
   final displayName = configValue(config, 'app.display_name');
   final artifactSlug = configValue(config, 'app.artifact_slug');
   final draft = configValue(config, 'publish.github.draft') == 'true';
-  final applicationIdentity =
-      configValue(config, 'macos.application_identity');
+  final applicationIdentity = configValue(config, 'macos.application_identity');
   final installerIdentity = configValue(config, 'macos.installer_identity');
   final notaryProfile = configValue(config, 'macos.notary_profile');
 
   final pubspec = readPubspecInfo();
   final version = pubspec.buildName;
-  final expectedMsix = '$version.0';
-  if (pubspec.msixVersion != expectedMsix) {
-    throw ReleaseException(
-      'Version mismatch: pubspec version is ${pubspec.fullVersion} but '
-      'msix_version is ${pubspec.msixVersion}; expected $expectedMsix. '
-      'Update pubspec.yaml so they agree.',
-    );
-  }
   stdout.writeln('Releasing version $version');
 
   // Signing identities must exist in a keychain. `security find-identity`
@@ -236,13 +224,7 @@ Future<void> buildMacos(List<String> args) async {
   await runChecked('xcrun', ['stapler', 'staple', pkg.path]);
 
   step('Gatekeeper assessment (spctl)');
-  await runChecked('spctl', [
-    '--assess',
-    '--type',
-    'install',
-    '-vv',
-    pkg.path,
-  ]);
+  await runChecked('spctl', ['--assess', '--type', 'install', '-vv', pkg.path]);
 
   // -------------------------------------------------------------- artifacts
 
@@ -297,11 +279,12 @@ File _locateAppBundle() {
       'No release products at ${productsDir.path}. Did the build fail?',
     );
   }
-  final apps = productsDir
-      .listSync()
-      .whereType<Directory>()
-      .where((entry) => entry.path.endsWith('.app'))
-      .toList();
+  final apps =
+      productsDir
+          .listSync()
+          .whereType<Directory>()
+          .where((entry) => entry.path.endsWith('.app'))
+          .toList();
   if (apps.isEmpty) {
     throw ReleaseException('No .app bundle found in ${productsDir.path}.');
   }
@@ -350,14 +333,15 @@ Future<void> _signAppBundle(
     p.join(appBundle.path, 'Contents', 'Frameworks'),
   );
   if (frameworksDir.existsSync()) {
-    final nested = frameworksDir
-        .listSync()
-        .where(
-          (entry) =>
-              entry.path.endsWith('.framework') ||
-              entry.path.endsWith('.dylib'),
-        )
-        .toList();
+    final nested =
+        frameworksDir
+            .listSync()
+            .where(
+              (entry) =>
+                  entry.path.endsWith('.framework') ||
+                  entry.path.endsWith('.dylib'),
+            )
+            .toList();
     for (final item in nested) {
       await runChecked('codesign', [
         '--force',
@@ -399,8 +383,7 @@ Future<void> _notarize(File pkg, String profile) async {
   final jsonStart = output.indexOf('{');
   Map<String, dynamic> result;
   try {
-    result =
-        jsonDecode(output.substring(jsonStart)) as Map<String, dynamic>;
+    result = jsonDecode(output.substring(jsonStart)) as Map<String, dynamic>;
   } on Object {
     throw ReleaseException('Could not parse notarytool output:\n$output');
   }

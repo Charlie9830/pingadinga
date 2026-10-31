@@ -664,7 +664,10 @@ class _MyHomePageState extends State<MyHomePage> with WindowListener {
 
   void _initWindowManager() async {
     if (kDebugMode == false) {
-      await windowManager.maximize();
+      if (Platform.isMacOS) {
+        // Only do this on MacOS for now. On Windows it locks the app up with a White screen until you interact with the Window size.
+        await windowManager.maximize();
+      }
     }
     await windowManager.setPreventClose(true);
   }
